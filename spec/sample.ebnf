@@ -10,6 +10,8 @@
 %ignore WS
 %ignore /\s+/
 %declare PLUGIN_HOOK
+%override NUMBER : DIGIT+ ("_" DIGIT+)*
+%extend statement : import_stmt
 
 // -- Terminals (uppercase names) -----------------------------------------------
 
@@ -90,10 +92,14 @@ pair_list  : "[" _separated{pair, ";"}  "]"
 
 pair       : expr "->" expr
 
-// -- %override and %extend -----------------------------------------------------
+// -- Tree-shaping prefixes -----------------------------------------------------
 
-%override NUMBER : DIGIT+ ("_" DIGIT+)*
+# Filtered terminals: matched but excluded from the parse tree
+_NL       : /\r?\n/
+_WS       : /\s+/
 
-%extend statement : import_stmt
+# Pin-all rule: ! keeps all terminals (including unnamed literals) in the tree
+!atom     : "(" expr ")" | NUMBER
 
-import_stmt : "import" name ("." name)*
+# Conditional inline rule: ? inlines the node if it has a single child
+?value    : NUMBER | name

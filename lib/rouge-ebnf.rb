@@ -35,13 +35,13 @@ module RougeEBNF
       rule %r(//[^\n]*), Comment::Single
       rule %r/#[^\n]*/, Comment::Single
       rule %r/%(?:import|ignore|declare|override|extend)\b/, Keyword
-      rule %r/[A-Z][A-Z0-9_]*/, Name::Class
+      rule %r/_?[A-Z][A-Z0-9_]*/, Name::Class
       rule %r/_?[a-z][a-zA-Z0-9_]*/, Name
       rule %r/"/, Str::Double, :string
       rule %r/\//, Str::Regex, :regex
       rule %r/\.\./, Operator
       rule %r/->/, Operator
-      rule %r/[|+*?~]/, Operator
+      rule %r/[|+*?~!]/, Operator
       rule %r/\./, Punctuation
       rule %r/\d+/, Num::Integer
       rule %r/:/, Punctuation

@@ -35,4 +35,16 @@ class RougeEBNFTest < Minitest::Test
     end
     assert_equal fulltext.join, sample_text
   end
+
+  def test_tree_shaping_prefixes
+    [
+      "_NL : /\\r?\\n/",        # _TERMINAL: filtered (excluded from parse tree)
+      '!atom : "(" expr ")"',   # !rule: keeps all terminals in tree
+      '?value : NUMBER | name', # ?rule: inlined if single child
+    ].each do |src|
+      RougeEBNF::EBNF.lex(src) do |tok, text|
+        refute_equal tok.qualname, 'Error'
+      end
+    end
+  end
 end
