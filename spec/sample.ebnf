@@ -1,0 +1,99 @@
+// Lark-style EBNF visual sample
+// Demonstrates terminals, rules, operators, directives, and literals
+
+// -- Directives ----------------------------------------------------------------
+
+%import common.NEWLINE
+%import common (WS, DIGIT, LETTER)
+%import .my_terminals (CUSTOM) -> BASE
+
+%ignore WS
+%ignore /\s+/
+%declare PLUGIN_HOOK
+
+// -- Terminals (uppercase names) -----------------------------------------------
+
+# Priority annotation: higher number = matched first
+NUMBER.2  : DIGIT+
+FLOAT.3   : DIGIT+ "." DIGIT*
+HEX.4     : /0x[0-9a-fA-F]+/
+
+# Case-insensitive string flag
+TRUE_KW   : "true"i
+FALSE_KW  : "false"i
+
+# Regex with flags
+MULTILINE : /.+/s
+VERBOSE   : /
+    [a-z]+   # letters
+    \d*      # optional digits
+/x
+
+# Character ranges
+LOWER     : "a".."z"
+UPPER     : "A".."Z"
+OCT_DIGIT : "0".."7"
+
+# Concatenation and alternation of literals
+SIGN      : "+" | "-"
+ALPHANUM  : LETTER | DIGIT
+
+// -- Rules (lowercase names) ---------------------------------------------------
+
+start     : statement+
+
+# Aliases on alternatives name the resulting tree nodes
+statement : assignment
+          | if_stmt
+          | while_stmt
+          | expr ";"         -> expr_stmt
+
+assignment : name "=" expr   -> assign
+           | name "+=" expr  -> augmented_assign
+
+# Multi-line rule with aliases
+expr      : expr "+" term    -> add
+          | expr "-" term    -> sub
+          | term
+
+term      : term "*" factor  -> mul
+          | term "/" factor  -> div
+          | factor
+
+factor    : NUMBER
+          | FLOAT
+          | HEX
+          | name
+          | "(" expr ")"
+          | "-" factor       -> negate
+
+# Optional items with [...]
+if_stmt   : "if" expr ":" block ["else" ":" block]
+
+while_stmt: "while" expr ":" block
+
+block     : statement+
+
+name      : LETTER (LETTER | DIGIT | "_")*
+
+// -- Repetition with ~ ---------------------------------------------------------
+
+four_digits  : DIGIT ~ 4
+two_to_four  : DIGIT ~ 2..4
+
+// -- Template (parameterised rule) ---------------------------------------------
+
+_separated{x, sep} : x (sep x)*
+
+arg_list   : "(" _separated{expr, ","} ")"
+pair_list  : "[" _separated{pair, ";"}  "]"
+
+pair       : expr "->" expr
+
+// -- %override and %extend -----------------------------------------------------
+
+%override NUMBER : DIGIT+ ("_" DIGIT+)*
+
+%extend statement : import_stmt
+
+import_stmt : "import" name ("." name)*

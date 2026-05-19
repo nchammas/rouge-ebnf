@@ -1,0 +1,5 @@
+vendor/
+.bundle/
+*.gem
+# Lock file is not committed for gems; consumers resolve their own dependency versions.
+Gemfile.lock
